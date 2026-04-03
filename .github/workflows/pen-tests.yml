@@ -6,7 +6,7 @@ on:
   workflow_run:
     workflows: ["Release"]
     branches:
-      - master
+      - "mod/**"
     types:
       - completed
 

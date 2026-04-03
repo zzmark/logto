@@ -3,8 +3,8 @@ name: Main
 on:
   push:
     branches:
-      - master
       - "push-action/**"
+      - "mod/**"
   pull_request:
 
 concurrency:

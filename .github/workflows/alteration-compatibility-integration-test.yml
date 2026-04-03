@@ -4,7 +4,7 @@ name: Alteration compatibility integration test
 on:
   push:
     branches:
-      - master
+      - "mod/**"
   pull_request:
 
 concurrency:
