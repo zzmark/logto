@@ -88,20 +88,6 @@ jobs:
       - name: Test
         run: pnpm ci:test
 
-      - name: Codecov core
-        uses: codecov/codecov-action@v4
-        with:
-          flags: core
-          directory: ./packages/core
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Codecov ui
-        uses: codecov/codecov-action@v4
-        with:
-          flags: ui
-          directory: ./packages/ui
-          token: ${{ secrets.CODECOV_TOKEN }}
-
   main-dockerize:
     runs-on: ubuntu-latest
 
