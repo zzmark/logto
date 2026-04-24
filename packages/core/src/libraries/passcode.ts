@@ -27,6 +27,7 @@ const randomCode = customAlphabet('1234567890', passcodeLength);
 
 export const passcodeExpiration = 10 * 60 * 1000; // 10 minutes.
 export const passcodeMaxTryCount = 10;
+export const passcodeReuseThreshold = 0.5; // Reuse if ≥ 50% of validity period remains
 
 export type PasscodeLibrary = ReturnType<typeof createPasscodeLibrary>;
 
@@ -54,7 +55,7 @@ export const createPasscodeLibrary = (queries: Queries, connectorLibrary: Connec
     type: TemplateType,
     payload: { phone: string } | { email: string }
   ) => {
-    // Disable existing passcodes.
+    // Find existing unconsumed passcodes.
     const passcodes = jti
       ? // Session based flows. E.g. SignIn, Register, etc.
         await findUnconsumedPasscodesByJtiAndType(jti, type)
@@ -62,6 +63,23 @@ export const createPasscodeLibrary = (queries: Queries, connectorLibrary: Connec
         await findUnconsumedPasscodesByIdentifierAndType({ type, ...payload });
 
     if (passcodes.length > 0) {
+      // Sort by createdAt descending to find the newest passcode.
+      const sorted = passcodes.slice().sort((code1, code2) => code2.createdAt - code1.createdAt);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const newest = sorted[0]!;
+      const remainingRatio =
+        (newest.createdAt + passcodeExpiration - Date.now()) / passcodeExpiration;
+
+      // Reuse the newest passcode if it has enough remaining validity and tries left.
+      if (remainingRatio >= passcodeReuseThreshold && newest.tryCount < passcodeMaxTryCount) {
+        const others = sorted.slice(1);
+        if (others.length > 0) {
+          await deletePasscodesByIds(others.map(({ id }) => id));
+        }
+        return newest;
+      }
+
+      // Otherwise, delete all old passcodes and create a new one.
       await deletePasscodesByIds(passcodes.map(({ id }) => id));
     }
 

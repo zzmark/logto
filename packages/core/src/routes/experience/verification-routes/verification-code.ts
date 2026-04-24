@@ -37,6 +37,7 @@ export default function verificationCodeRoutes<T extends ExperienceInteractionRo
       body: z.object({
         identifier: verificationCodeIdentifierGuard,
         interactionEvent: z.nativeEnum(InteractionEvent),
+        verificationId: z.string().optional(),
       }),
       response: z.object({
         verificationId: z.string(),
@@ -45,7 +46,7 @@ export default function verificationCodeRoutes<T extends ExperienceInteractionRo
       status: [200, 400, 404, 422, 501],
     }),
     async (ctx, next) => {
-      const { identifier, interactionEvent } = ctx.guard.body;
+      const { identifier, interactionEvent, verificationId } = ctx.guard.body;
       // Require captcha if the user is not identified.
       if (!ctx.experienceInteraction.identifiedUserId) {
         await ctx.experienceInteraction.guardCaptcha();
@@ -73,7 +74,8 @@ export default function verificationCodeRoutes<T extends ExperienceInteractionRo
             queries,
             identifier,
             // If the interaction already identified a user, we are binding a new MFA verification
-            isBindingEmailForMfa ? TemplateType.BindMfa : getTemplateTypeByEvent(interactionEvent)
+            isBindingEmailForMfa ? TemplateType.BindMfa : getTemplateTypeByEvent(interactionEvent),
+            verificationId
           ),
         libraries,
         ctx,

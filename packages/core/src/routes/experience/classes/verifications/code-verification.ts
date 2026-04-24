@@ -268,14 +268,15 @@ export const createNewCodeVerificationRecord = (
   identifier:
     | VerificationCodeIdentifier<SignInIdentifier.Email>
     | VerificationCodeIdentifier<SignInIdentifier.Phone>,
-  templateType: TemplateType
+  templateType: TemplateType,
+  verificationId?: string
 ) => {
   const { type } = identifier;
 
   switch (type) {
     case SignInIdentifier.Email: {
       return new EmailCodeVerification(libraries, queries, {
-        id: generateStandardId(),
+        id: verificationId ?? generateStandardId(),
         type: VerificationType.EmailVerificationCode,
         identifier,
         templateType,
@@ -284,7 +285,7 @@ export const createNewCodeVerificationRecord = (
     }
     case SignInIdentifier.Phone: {
       return new PhoneCodeVerification(libraries, queries, {
-        id: generateStandardId(),
+        id: verificationId ?? generateStandardId(),
         type: VerificationType.PhoneVerificationCode,
         identifier,
         templateType,

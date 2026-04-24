@@ -43,10 +43,17 @@ const useResendVerificationCode = (flow: UserFlow, identifier: VerificationCodeI
 
   const handleError = useErrorHandler();
   const resendVerificationCode = useApi(sendVerificationCode);
-  const { setVerificationId } = useContext(UserInteractionContext);
+  const { setVerificationId, verificationIdsMap } = useContext(UserInteractionContext);
 
   const onResendVerificationCode = useCallback(async () => {
-    const [error, result] = await resendVerificationCode(interactionEvent, identifier);
+    // Reuse the current verification ID to resend the verification code.
+    // If the verification ID is not provided, the server will create a new verification ID and invalidate the previous one.
+    const currentVerificationId = verificationIdsMap[codeVerificationTypeMap[identifier.type]];
+    const [error, result] = await resendVerificationCode(
+      interactionEvent,
+      identifier,
+      currentVerificationId
+    );
 
     if (error) {
       await handleError(error);
@@ -66,6 +73,7 @@ const useResendVerificationCode = (flow: UserFlow, identifier: VerificationCodeI
     identifier,
     handleError,
     setVerificationId,
+    verificationIdsMap,
     setToast,
     restart,
   ]);
