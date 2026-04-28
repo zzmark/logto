@@ -29,7 +29,8 @@ export default function customUiAssetsRoutes<T extends ManagementApiRouter>(
 ) {
   router.post(
     '/sign-in-exp/default/custom-ui-assets',
-    koaQuotaGuard({ key: 'bringYourUiEnabled', quota }),
+    // [UNLOCKED] Quota guard disabled — bringYourUi available in all environments.
+    // Original: koaQuotaGuard({ key: 'bringYourUiEnabled', quota }),
     koaGuard({
       files: object({
         file: uploadFileGuard.array().min(1).max(1),
